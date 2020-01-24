@@ -1,3 +1,4 @@
+import DTO.UserNotFoundResponseDTO;
 import DTO.UserRequestDTO;
 import DTO.UserResponseDTO;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -28,18 +29,20 @@ public class UserTest {
     }
 
     @Test
-    public void createUserAndCheckExistence(){
+    public void createUserAndCheckExistenceAndDeleteUser(){
         UserRequestDTO newUser = createDummyUser();
         String location = createResource("/users", newUser);
         UserResponseDTO retrievedUser = getResource(location, UserResponseDTO.class);
         assertEqualUser(newUser, retrievedUser);
+        deleteResource(location);
+        assertUserIsDeleted(location, getResource(location, UserNotFoundResponseDTO.class));
     }
 
     private UserRequestDTO createDummyUser(){
         UserRequestDTO userRequestDTO = new UserRequestDTO();
         userRequestDTO.setFirst_name("Teste");
         userRequestDTO.setLast_name("Teste");
-        userRequestDTO.setEmail("i@t.co");
+        userRequestDTO.setEmail("l@t.co");
         userRequestDTO.setGender("female");
         userRequestDTO.setPhone("999999999");
         userRequestDTO.setStatus("active");
@@ -69,5 +72,19 @@ public class UserTest {
 
     private void assertEqualUser(UserRequestDTO newUser, UserResponseDTO retrievedUser){
         assertThat(retrievedUser.result).isEqualToIgnoringGivenFields(newUser, "id");
+    }
+
+    private void deleteResource(String location){
+         given()
+            .spec(spec)
+            .when()
+            .delete(location)
+            .then()
+            .statusCode(200);
+    }
+
+    private void assertUserIsDeleted(String location, UserNotFoundResponseDTO retrievedUser){
+        assertThat(retrievedUser.result.getStatus()).isEqualTo(404);
+        assertThat(retrievedUser.result.getName()).isEqualTo("Not Found");
     }
 }

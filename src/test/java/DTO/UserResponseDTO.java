@@ -16,7 +16,6 @@ public class UserResponseDTO {
         private String phone;
         private String status;
 
-
         public String getFirst_name() {
             return first_name;
         }
